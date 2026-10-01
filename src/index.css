@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000000;
+  color: #CCCCCC;
+  font-family: 'JetBrains Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #FFFFFF;
+  color: #000000;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* LA MAGIA 3D OPENCODE (Sombras Extendidas) */
+.title-3d {
+  text-shadow: 6px 6px 0px #333333;
+}
+
+.box-3d {
+  background-color: #0A0A0A;
+  border: 2px solid #333333;
+  /* Sombra más desplazada para mayor profundidad 3D */
+  box-shadow: 10px 10px 0px #222222;
+  transition: all 0.1s ease-out;
+}
+
+.box-3d.interactive:hover {
+  /* Al pasar el mouse, se hunde un poco y la sombra se reduce en proporción */
+  transform: translate(4px, 4px);
+  box-shadow: 6px 6px 0px #555555;
+  border-color: #555555;
+}
+
+.box-3d.interactive:active {
+  /* Al hacer click, se hunde por completo tragándose toda la sombra */
+  transform: translate(10px, 10px);
+  box-shadow: 0px 0px 0px #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+/* Para la consola de abajo */
+.console-3d {
+  border: 2px solid #333333;
+  box-shadow: 8px 8px 0px #111111;
+}
