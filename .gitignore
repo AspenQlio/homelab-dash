@@ -7,3 +7,4 @@ __pycache__/
 # Mantenimiento: ignorar logs locales
 # Mantenimiento: ignorar builds temporales
 # Mantenimiento: ignorar cache de dependencias
+# Mantenimiento: limpieza de extensiones
