@@ -1,0 +1,9 @@
+{
+  "pihole_url": "http://pi-hole.local",
+  "services": [
+    { "id": 1, "name": "PI-HOLE", "desc": "DNS Sinkhole", "port": "80", "type": "NET", "url": "http://pi-hole.local/admin" },
+    { "id": 2, "name": "DOCKGE", "desc": "Docker Manager", "port": "5001", "type": "INFRA", "url": "http://media.local:5001" },
+    { "id": 3, "name": "UPTIME KUMA", "desc": "Uptime Monitoring", "port": "3001", "type": "INFRA", "url": "http://kuma.local" },
+    { "id": 4, "name": "VAULTWARDEN", "desc": "Password Manager", "port": "443", "type": "SEC", "url": "https://vault.local" }
+  ]
+}
