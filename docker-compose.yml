@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  homelab-dash:
+    build: .
+    container_name: homelab-dash
+    ports:
+      - "8000:8000"
+    volumes:
+      # Permite leer el estado de los contenedores
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Permite al usuario editar los servicios sin recompilar
+      - ./backend/config.json:/app/backend/config.json
+    restart: unless-stopped
