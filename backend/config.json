@@ -1,9 +1,21 @@
 {
   "pihole_url": "http://pi-hole.local",
   "services": [
-    { "id": 1, "name": "PI-HOLE", "desc": "DNS Sinkhole", "port": "80", "type": "NET", "url": "http://pi-hole.local/admin" },
-    { "id": 2, "name": "DOCKGE", "desc": "Docker Manager", "port": "5001", "type": "INFRA", "url": "http://media.local:5001" },
-    { "id": 3, "name": "UPTIME KUMA", "desc": "Uptime Monitoring", "port": "3001", "type": "INFRA", "url": "http://kuma.local" },
-    { "id": 4, "name": "VAULTWARDEN", "desc": "Password Manager", "port": "443", "type": "SEC", "url": "https://vault.local" }
+    { "id": 1, "name": "PI-HOLE", "desc": "DNS Sinkhole & Network Ad-Blocker", "port": "80", "type": "NET", "url": "http://pi-hole.local/admin" },
+    { "id": 2, "name": "DOCKGE", "desc": "Docker Compose Stack Manager", "port": "5001", "type": "INFRA", "url": "http://media.local:5001" },
+    { "id": 3, "name": "UPTIME KUMA", "desc": "Service Uptime Monitoring", "port": "3001", "type": "INFRA", "url": "http://kuma.local" },
+    { "id": 4, "name": "VAULTWARDEN", "desc": "Self-hosted Password Manager", "port": "443", "type": "SEC", "url": "https://vault.local" },
+    { "id": 5, "name": "ACTUAL BUDGET", "desc": "Personal Finance & Budgeting", "port": "5007", "type": "FINANCE", "url": "https://aspen.tail93c359.ts.net:5007" },
+    { "id": 6, "name": "KAVITA", "desc": "Manga & eBook Server", "port": "5000", "type": "BOOKS", "url": "http://media.local:5000" },
+    { "id": 7, "name": "TTYD", "desc": "Web-based System Terminal", "port": "7681", "type": "SYS", "url": "http://media.local:7681" },
+    { "id": 8, "name": "OLLAMA", "desc": "Local LLM Runner (Qwen2.5)", "port": "11434", "type": "AI", "url": "http://media.local:11434" },
+    { "id": 9, "name": "SANTI DAEMON", "desc": "Custom WhatsApp AI Agent", "port": "SYS", "type": "AI", "url": "#" },
+    { "id": 10, "name": "JELLYFIN", "desc": "Media Streaming Server", "port": "8096", "type": "MEDIA", "url": "http://media.local:8096" },
+    { "id": 11, "name": "SONARR", "desc": "TV Shows Automator", "port": "8989", "type": "MEDIA", "url": "http://media.local:8989" },
+    { "id": 12, "name": "RADARR", "desc": "Movies Automator", "port": "7878", "type": "MEDIA", "url": "http://media.local:7878" },
+    { "id": 13, "name": "BAZARR", "desc": "Subtitles Automator", "port": "6767", "type": "MEDIA", "url": "http://media.local:6767" },
+    { "id": 14, "name": "PROWLARR", "desc": "Indexer Manager", "port": "9696", "type": "MEDIA", "url": "http://media.local:9696" },
+    { "id": 15, "name": "SEERR", "desc": "Media Request Manager", "port": "5055", "type": "MEDIA", "url": "http://media.local:5055" },
+    { "id": 16, "name": "TRANSMISSION", "desc": "Torrent Download Client", "port": "9091", "type": "TORRENT", "url": "http://media.local:9091" }
   ]
 }
