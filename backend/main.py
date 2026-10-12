@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -18,17 +18,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Cargar configuración dinámica
+CONFIG_FILE = "backend/config.json"
+
 def load_config():
     try:
-        with open("backend/config.json", "r") as f:
+        with open(CONFIG_FILE, "r") as f:
             return json.load(f)
     except Exception:
         return {"pihole_url": "http://pi.hole", "services": []}
 
+def save_config(data):
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
 @app.get("/api/config")
 def get_config():
     return load_config()
+
+@app.post("/api/services")
+async def add_service(request: Request):
+    new_service = await request.json()
+    cfg = load_config()
+    
+    # Calcular el nuevo ID
+    max_id = max([s.get("id", 0) for s in cfg.get("services", [])], default=0)
+    new_service["id"] = max_id + 1
+    
+    # Extraer el puerto si viene en la url, si no poner por defecto
+    if "port" not in new_service:
+        parts = new_service.get("url", "").split(":")
+        new_service["port"] = parts[-1].replace("/", "") if len(parts) > 2 else "80"
+        
+    cfg["services"].append(new_service)
+    save_config(cfg)
+    return {"status": "success", "service": new_service}
 
 @app.get("/api/system")
 def get_system():
@@ -71,7 +94,6 @@ async def get_pihole():
     except Exception:
         return {"status": "mock", "ads_blocked": 14205, "ratio": 12.4, "domains": 185002}
 
-# Si existe la carpeta dist del frontend compilado, la servimos
 if os.path.exists("dist"):
     app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
     @app.get("/{full_path:path}")
