@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-
 function ProgressBar({ label, percent, detail }) {
-  const bars = Math.round((percent / 100) * 20);
-  const barString = '[' + '='.repeat(bars) + ' '.repeat(20 - bars) + ']';
+  const bars = Math.round((percent / 100) * 20) || 0;
+  const safePercent = percent || 0;
+  const barString = '[' + '='.repeat(Math.max(0, bars)) + ' '.repeat(Math.max(0, 20 - bars)) + ']';
   
   return (
     <div style={styles.metricRow}>
       <span style={styles.metricLabel}>{label}</span>
-      <span style={styles.metricBar}>{barString} {percent.toFixed(1)}%</span>
+      <span style={styles.metricBar}>{barString} {safePercent.toFixed(1)}%</span>
       <span style={styles.metricDetail}>{detail}</span>
     </div>
   );
@@ -20,26 +20,36 @@ function App() {
   const [pih, setPih] = useState({ ratio: 0, ads_blocked: 0, domains: 0 });
   const [services, setServices] = useState([]);
   const [logs, setLogs] = useState(['> system init...', '> awaiting telemetry...']);
+  
+  // Estado para el Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newSrv, setNewSrv] = useState({ name: '', desc: '', type: 'APP', url: '' });
+
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch('/api/config');
+      if (res.ok) {
+        const cfg = await res.json();
+        setServices(cfg.services);
+      }
+    } catch (e) { console.error('Error loading config'); }
+  };
 
   useEffect(() => {
+    fetchConfig();
     const fetchData = async () => {
       try {
-        const [sysRes, docRes, pihRes, cfgRes] = await Promise.all([
+        const [sysRes, docRes, pihRes] = await Promise.all([
           fetch('/api/system').catch(() => null),
           fetch('/api/docker').catch(() => null),
-          fetch('/api/pihole').catch(() => null),
-          fetch('/api/config').catch(() => null)
+          fetch('/api/pihole').catch(() => null)
         ]);
 
         if (sysRes) setSys(await sysRes.json());
         if (docRes) setDoc(await docRes.json());
         if (pihRes) setPih(await pihRes.json());
-        if (cfgRes) { const cfg = await cfgRes.json(); setServices(cfg.services); }
         
-        setLogs(prev => {
-          const newLogs = [...prev, `> telemetry synced [${new Date().toLocaleTimeString()}]`];
-          return newLogs.slice(-4);
-        });
+        setLogs(prev => [...prev.slice(-3), `> telemetry synced [${new Date().toLocaleTimeString()}]`]);
       } catch (err) {
         setLogs(prev => [...prev.slice(-3), `> err: connection refused`]);
       }
@@ -49,6 +59,25 @@ function App() {
     const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleAddService = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSrv)
+      });
+      if (res.ok) {
+        setLogs(prev => [...prev.slice(-3), `> SUCCESS: Service ${newSrv.name} registered.`]);
+        setIsModalOpen(false);
+        setNewSrv({ name: '', desc: '', type: 'APP', url: '' });
+        fetchConfig(); // Recargar tarjetas
+      }
+    } catch (err) {
+      setLogs(prev => [...prev.slice(-3), `> ERROR: Could not add service.`]);
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -71,7 +100,7 @@ function App() {
             <span style={styles.bigNumber}>{doc.running}</span>
             <span style={styles.bigLabel}>RUNNING / {doc.total} TOTAL</span>
           </div>
-          <p style={styles.subText}>STATUS: {doc.status === 'online' ? 'CONNECTED' : 'OFFLINE/DENIED'}</p>
+          <p style={styles.subText}>STATUS: {doc.status === 'online' ? 'CONNECTED' : 'OFFLINE'}</p>
         </div>
 
         <div className="box-3d" style={styles.monitorBox}>
@@ -80,7 +109,7 @@ function App() {
             <span style={styles.bigNumber}>{pih.ratio}%</span>
             <span style={styles.bigLabel}>BLOCKED</span>
           </div>
-          <p style={styles.subText}>{pih.ads_blocked.toLocaleString()} ADS | {pih.domains.toLocaleString()} RULES</p>
+          <p style={styles.subText}>{Number(pih.ads_blocked).toLocaleString()} ADS | {Number(pih.domains).toLocaleString()} RULES</p>
         </div>
       </div>
 
@@ -94,13 +123,19 @@ function App() {
               </div>
               <div style={styles.cardDesc}>{service.desc}</div>
               <div style={styles.cardFooter}>
-                <span style={styles.servicePort}>PORT:{service.port}</span>
+                <span style={styles.servicePort}>PORT:{service.port || '80'}</span>
                 <div style={styles.cardStatus}>
                   <span style={styles.statusIndicator}></span>ONLINE
                 </div>
               </div>
             </a>
           ))}
+          
+          {/* BOTON DE AGREGAR */}
+          <div className="box-3d interactive" style={styles.addCard} onClick={() => setIsModalOpen(true)}>
+            <span style={styles.addIcon}>+</span>
+            <span style={styles.addText}>ADD SERVICE</span>
+          </div>
         </div>
 
         <div className="console-3d" style={styles.consoleBox}>
@@ -108,6 +143,37 @@ function App() {
           <div style={styles.logLine}><span style={styles.cursor}>_</span></div>
         </div>
       </main>
+
+      {/* MODAL NEO-BRUTALISTA */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span>[ DEPLOY SERVICE ]</span>
+              <button className="close-btn" onClick={() => setIsModalOpen(false)}>X</button>
+            </div>
+            <form onSubmit={handleAddService}>
+              <div className="input-group">
+                <label>SERVICE NAME</label>
+                <input required autoFocus placeholder="e.g. PORTAINER" value={newSrv.name} onChange={e => setNewSrv({...newSrv, name: e.target.value})} />
+              </div>
+              <div className="input-group">
+                <label>DESCRIPTION</label>
+                <input required placeholder="Docker UI Manager" value={newSrv.desc} onChange={e => setNewSrv({...newSrv, desc: e.target.value})} />
+              </div>
+              <div className="input-group">
+                <label>CATEGORY (TAG)</label>
+                <input required placeholder="INFRA" value={newSrv.type} onChange={e => setNewSrv({...newSrv, type: e.target.value.toUpperCase()})} />
+              </div>
+              <div className="input-group">
+                <label>LOCAL URL</label>
+                <input required type="url" placeholder="http://192.168.1.X:9000" value={newSrv.url} onChange={e => setNewSrv({...newSrv, url: e.target.value})} />
+              </div>
+              <button type="submit" className="btn-submit">INITIALIZE</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -142,6 +208,10 @@ const styles = {
   cardStatus: { fontSize: '12px', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' },
   statusIndicator: { width: '10px', height: '10px', backgroundColor: '#FFFFFF', display: 'inline-block' },
   
+  addCard: { display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '24px', backgroundColor: '#000000', border: '2px dashed #333', cursor: 'pointer', minHeight: '180px' },
+  addIcon: { fontSize: '48px', color: '#555', fontWeight: '100', marginBottom: '10px' },
+  addText: { fontSize: '14px', color: '#777', fontWeight: 'bold', letterSpacing: '1px', fontFamily: 'monospace' },
+
   consoleBox: { backgroundColor: '#000000', padding: '24px', color: '#777777', fontSize: '14px', lineHeight: '1.6' },
   logLine: { marginBottom: '6px' },
   cursor: { animation: 'blink 1s step-end infinite', color: '#FFFFFF', fontWeight: 'bold' }
