@@ -1,12 +1,15 @@
-version: '3.8'
-
 services:
   homelab-dash:
     build: .
     container_name: homelab-dash
     ports:
       - "9000:8000"
+    env_file:
+      - .env
+    environment:
+      GOTERO_STATE_FILE: /app/data/gotero.json
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./backend/config.json:/app/backend/config.json
+      - ./backend/data:/app/data
     restart: unless-stopped
