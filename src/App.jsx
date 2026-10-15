@@ -33,11 +33,11 @@ function App() {
         const cfg = await res.json();
         setServices(cfg.services);
       }
-    } catch (e) { console.error('Error loading config'); }
+    } catch { console.error('Error loading config'); }
   };
 
   useEffect(() => {
-    fetchConfig();
+    void fetchConfig();
     const fetchData = async () => {
       try {
         const [sysRes, docRes, pihRes, goteroRes] = await Promise.all([
@@ -53,12 +53,12 @@ function App() {
         if (goteroRes) setGotero(await goteroRes.json());
         
         setLogs(prev => [...prev.slice(-3), `> telemetry synced [${new Date().toLocaleTimeString()}]`]);
-      } catch (err) {
+      } catch {
         setLogs(prev => [...prev.slice(-3), `> err: connection refused`]);
       }
     };
 
-    fetchData();
+    void fetchData();
     const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -77,7 +77,7 @@ function App() {
         setNewSrv({ name: '', desc: '', type: 'APP', url: '' });
         fetchConfig(); // Recargar tarjetas
       }
-    } catch (err) {
+    } catch {
       setLogs(prev => [...prev.slice(-3), `> ERROR: Could not add service.`]);
     }
   };
