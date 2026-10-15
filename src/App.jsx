@@ -18,6 +18,7 @@ function App() {
   const [sys, setSys] = useState({ cpu: 0, ram: 0, disk: 0, uptime: 0, ram_used: 0, disk_used: 0 });
   const [doc, setDoc] = useState({ running: 0, total: 0, status: 'loading' });
   const [pih, setPih] = useState({ ratio: 0, ads_blocked: 0, domains: 0 });
+  const [gotero, setGotero] = useState({ pending: 0 });
   const [services, setServices] = useState([]);
   const [logs, setLogs] = useState(['> system init...', '> awaiting telemetry...']);
   
@@ -39,15 +40,17 @@ function App() {
     fetchConfig();
     const fetchData = async () => {
       try {
-        const [sysRes, docRes, pihRes] = await Promise.all([
+        const [sysRes, docRes, pihRes, goteroRes] = await Promise.all([
           fetch('/api/system').catch(() => null),
           fetch('/api/docker').catch(() => null),
-          fetch('/api/pihole').catch(() => null)
+          fetch('/api/pihole').catch(() => null),
+          fetch('/api/gotero').catch(() => null)
         ]);
 
         if (sysRes) setSys(await sysRes.json());
         if (docRes) setDoc(await docRes.json());
         if (pihRes) setPih(await pihRes.json());
+        if (goteroRes) setGotero(await goteroRes.json());
         
         setLogs(prev => [...prev.slice(-3), `> telemetry synced [${new Date().toLocaleTimeString()}]`]);
       } catch (err) {
@@ -110,6 +113,15 @@ function App() {
             <span style={styles.bigLabel}>BLOCKED</span>
           </div>
           <p style={styles.subText}>{Number(pih.ads_blocked).toLocaleString()} ADS | {Number(pih.domains).toLocaleString()} RULES</p>
+        </div>
+
+        <div className="box-3d" style={styles.monitorBox}>
+          <h2 style={styles.monitorTitle}>[ GOTERO QUEUE ]</h2>
+          <div style={styles.bigNumberBox}>
+            <span style={styles.bigNumber}>{gotero.pending}</span>
+            <span style={styles.bigLabel}>COMMITS PENDING</span>
+          </div>
+          <p style={styles.subText}>AUTO-DRIP: 1–2 COMMITS / DAY</p>
         </div>
       </div>
 
